@@ -32,33 +32,7 @@ Foxified is a lightweight task management application built with Python and PySi
 - Python 3.10 or newer recommended.
 - `pip` — Python package installer.
 
-### Installation
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Lisekyy/Foxified.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd Foxified
-   ```
-
-3. Install the required packages:
-
-   ```bash
-   pip install PySide6 qtawesome
-   ```
-
-4. Run the application:
-
-   ```bash
-   python main.py
-   ```
-
-> **Note:** If the project uses additional dependencies, install them as well. A `requirements.txt` file is recommended for managing dependencies consistently.
 
 ## 📂 Project Structure
 
@@ -99,9 +73,10 @@ Potential improvements for future releases:
 
 - [ ] Improved task filtering and search
 - [ ] Due dates and task priorities
-- [ ] Task sorting and drag-and-drop organization
-- [ ] Data export and import
-- [ ] Automated tests and dependency management
+- [ ] Task sorting
+- [ ] Data export 
+- [ ] Calendar
+
 
 ## 🤝 Contributing
 
