@@ -1,7 +1,7 @@
 
 from PySide6 import QtCore, QtWidgets, QtGui
 import qtawesome as qta
-
+import json
 TASK_MIME = "application/x-task"
 
 
