@@ -1,16 +1,14 @@
 import os
 import sys
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QObject, Signal
-from PySide6.QtCore import QTimer
-from bin.UI import GUI
-from bin.UIStyles import STYLESHEET
-from PySide6.QtNetwork import QLocalServer, QLocalSocket
-from bin.dataManager import *
-from PySide6 import QtCore, QtWidgets, QtGui
 from pathlib import Path
+
+from PySide6.QtWidgets import QApplication
+
 from bin.Instance import SingleInstnce
-from bin.UpdateChecker import UpdateChecker
+
+BASE_DIR = Path(__file__).resolve().parent
+ICON_PATH = BASE_DIR / "assets" / "icon.png"
+
 
 def resource_path(relative_path):
     """
@@ -21,10 +19,6 @@ def resource_path(relative_path):
     """
     base = getattr(sys, "_MEIPASS", os.path.abspath("."))
     return os.path.join(base, relative_path)
-
-
-BASE_DIR = Path(__file__).resolve().parent
-ICON_PATH = BASE_DIR / "assets" / "icon.png"
 
 
 def setup_windows_identity(app_id="Foxified.App", name="Foxified", icon_path=None):
@@ -49,25 +43,6 @@ def setup_windows_identity(app_id="Foxified.App", name="Foxified", icon_path=Non
         if icon_path:
             winreg.SetValueEx(key, "IconUri", 0, winreg.REG_SZ, str(icon_path))
 
-def main():
-
-    """Konfiguruje i uruchamia aplikację Foxified."""
-    setup_windows_identity(icon_path=resource_path(ICON_PATH))
-    database = DataManager()
-    app = QApplication(sys.argv)
-    app.setStyleSheet(STYLESHEET)
-    guard = SingleInstnce("FoxifiedIstance")
-    if guard.is_running():
-        sys.exit(0)
-    guard.listen()
-    app.setWindowIcon(QtGui.QIcon(str(ICON_PATH)))
-    guard.activated.connect(lambda: bring_to_front(window))
-    window = GUI(database)
-    window.show()
-    checker = UpdateChecker(window)
-    checker.update_available.connect(lambda tag, url: checker.show_update_dialog(window, tag, url))
-    QTimer.singleShot(2000, checker.check)
-    sys.exit(app.exec())
 
 def bring_to_front(window) -> None:
     """Pokazuje i wysuwa okno na wierzch, także gdy jest w trayu.
@@ -79,5 +54,45 @@ def bring_to_front(window) -> None:
     window.activateWindow()
 
 
+def main():
+    """Konfiguruje i uruchamia aplikację Foxified.
+
+    Sprawdzenie drugiej instancji jest na samym początku, a ciężkie
+    moduły są importowane dopiero po nim, żeby druga instancja kończyła
+    się natychmiast.
+
+    :return: kod wyjścia aplikacji
+    """
+    app = QApplication(sys.argv)
+    guard = SingleInstnce("FoxifiedIstance")
+    if guard.is_running():
+        return 0
+    guard.listen()
+
+    from PySide6 import QtGui
+    from PySide6.QtCore import QTimer
+
+    from bin.dataManager import DataManager
+    from bin.UI import GUI
+    from bin.UIStyles import STYLESHEET
+    from bin.UpdateChecker import UpdateChecker
+
+    setup_windows_identity(icon_path=resource_path(ICON_PATH))
+    app.setStyleSheet(STYLESHEET)
+    app.setWindowIcon(QtGui.QIcon(str(ICON_PATH)))
+
+    database = DataManager()
+    window = GUI(database)
+    guard.activated.connect(lambda: bring_to_front(window))
+    window.show()
+
+    checker = UpdateChecker(window)
+    checker.update_available.connect(
+        lambda tag, url: checker.show_update_dialog(window, tag, url)
+    )
+    QTimer.singleShot(2000, checker.check)
+    return app.exec()
+
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
