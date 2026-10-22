@@ -47,7 +47,7 @@ QFrame#dashboard-screen QLabel {
     font-size:16px;
 }
 QFrame#dashboard-screen QPushButton#dashboard-confirm-btn {
-    background-color: #transparent;
+    background-color: transparent;
     color: #475569;
     border: none;
     width: 25%;
@@ -69,7 +69,7 @@ QFrame#dashboard-screen QPushButton#dashboard-confirm-btn:pressed {
 }
 
 QPushButton#dashboard-button {
-    background-color: #transparent;
+    background-color: transparent;
     color: #475569;
     border: none;
     border-radius: 8px;
