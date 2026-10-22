@@ -2,13 +2,15 @@ import os
 import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QTimer
 from bin.UI import GUI
 from bin.UIStyles import STYLESHEET
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from bin.dataManager import *
 from PySide6 import QtCore, QtWidgets, QtGui
 from pathlib import Path
-
+from bin.Instance import SingleInstnce
+from bin.UpdateChecker import UpdateChecker
 
 def resource_path(relative_path):
     """
@@ -47,52 +49,8 @@ def setup_windows_identity(app_id="Foxified.App", name="Foxified", icon_path=Non
         if icon_path:
             winreg.SetValueEx(key, "IconUri", 0, winreg.REG_SZ, str(icon_path))
 
-class SingleInstnce(QObject):
-    """
-    Pilnuje, aby działała tylko jedna instancja aplikacji.
-
-    Pierwsza instancja nasłuchuje na lokalnym gnieździe. Kolejne łączą się
-    z nim, wysyłają sygnał aktywacji i kończą działanie.
-    """
-
-    activated = Signal()
-
-    def __init__(self, key: str, parent=None):
-        super().__init__(parent)
-        self._key = key
-        self._server = None
-
-    def is_running(self) -> bool:
-        """
-        Sprawdza, czy inna instancja już działa i wybudza ją
-        :return: True, jeśli inna instancja już działa
-        """
-        socket = QLocalSocket()
-        socket.connectToServer(self._key)
-        if socket.waitForConnected(300):
-            socket.write(b"show")
-            socket.waitForBytesWritten(300)
-            socket.disconnectFromServer()
-            return True
-        return False
-
-    def listen(self) -> None:
-        """
-        Uruchamia serwer nasłuchujący na kolejne instancje.
-        """
-        QLocalServer.removeServer(self._key)
-        self._server = QLocalServer(self)
-        self._server.newConnection.connect(self._on_connection)
-        self._server.listen(self._key)
-
-    def _on_connection(self) -> None:
-        conn = self._server.nextPendingConnection()
-        if conn is not None:
-            conn.readyRead.connect(conn.deleteLater)
-        self.activated.emit()
-
-
 def main():
+
     """Konfiguruje i uruchamia aplikację Foxified."""
     setup_windows_identity(icon_path=resource_path(ICON_PATH))
     database = DataManager()
@@ -106,6 +64,9 @@ def main():
     guard.activated.connect(lambda: bring_to_front(window))
     window = GUI(database)
     window.show()
+    checker = UpdateChecker(window)
+    checker.update_available.connect(lambda tag, url: checker.show_update_dialog(window, tag, url))
+    QTimer.singleShot(2000, checker.check)
     sys.exit(app.exec())
 
 def bring_to_front(window) -> None:
@@ -116,6 +77,7 @@ def bring_to_front(window) -> None:
     window.showNormal()
     window.raise_()
     window.activateWindow()
+
 
 if __name__ == "__main__":
     main()

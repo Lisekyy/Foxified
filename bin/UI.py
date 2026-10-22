@@ -1,5 +1,7 @@
 import sys
 import os
+import time
+
 from PySide6 import QtCore, QtWidgets, QtGui
 import qtawesome as qta
 from bin.Widgets import dashboardContainers, topBar, display_tasks, dashboard_panel
@@ -685,7 +687,6 @@ class GUI(QtWidgets.QWidget):
         rows = (len(self.tabels) + max_columns - 1) // max_columns
         grid_layout.setColumnStretch(max_columns, 1)
         grid_layout.setRowStretch(rows, 1)
-
         scroll_area.setWidget(container_widget)
         if len(self.tabels) == 0:
             info = QtWidgets.QLabel("Stwórz swoją pierwszą tablice.")
