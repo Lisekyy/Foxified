@@ -677,8 +677,8 @@ class GUI(QtWidgets.QWidget):
             panel.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
 
             panel.customContextMenuRequested.connect(
-                lambda pos, tid=table_id:
-                self.show_context_menu(button=panel, table_id=table_id, pos=pos)
+                lambda pos, tid=table_id, p=panel:
+                self.show_context_menu(button=p, table_id=tid, pos=pos)
             )
 
             row = index // max_columns
